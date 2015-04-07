@@ -23,7 +23,7 @@
 -behaviour(gen_server).
 
 %% Internal API
--export([start_link/2]).
+-export([start_link/3]).
 
 %% gen_server callbacks
 -export([init/1,
@@ -38,7 +38,8 @@
           handler :: atom(),
           lsocket :: term(),
           socket :: term(),
-          state :: term()
+          state :: term(),
+          start_args :: term()
          }).
 
 %%------------------------------------------------------------------------------
@@ -46,20 +47,21 @@
 %%------------------------------------------------------------------------------
 
 %% @doc Start gen_server.
--spec start_link(term(), atom()) -> {ok, pid()} | ignore | {error, term()}.
-start_link(LSocket, HandlerModule) ->
-    gen_server:start_link(?MODULE, [self(), LSocket, HandlerModule], []).
+-spec start_link(term(), atom(), term()) -> {ok, pid()} | ignore | {error, term()}.
+start_link(LSocket, HandlerModule, Args) ->
+    gen_server:start_link(?MODULE, [self(), LSocket, HandlerModule, Args], []).
 
 %%------------------------------------------------------------------------------
 %% gen_server callbacks
 %%------------------------------------------------------------------------------
 
-init([Supervisor, LSocket, HandlerModule]) ->
+init([Supervisor, LSocket, HandlerModule, Args]) ->
     %% Timeout 0 will send a timeout message to the gen_server
     %% to handle gen_tcp:accept before any other message.
     {ok, #state{supervisor = Supervisor,
                 handler = HandlerModule,
-                lsocket = LSocket}, 0}.
+                lsocket = LSocket,
+                start_args = Args}, 0}.
 
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.
@@ -68,13 +70,13 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 handle_info(timeout, #state{supervisor = Supervisor, handler = HandlerModule,
-                            lsocket = LSocket} = State) ->
+                            lsocket = LSocket, start_args = Args} = State) ->
     case gen_tcp:accept(LSocket) of
         {ok, Socket} ->
             %% Start new child to wait for the next connection.
             supervisor:start_child(Supervisor, []),
 
-            case HandlerModule:handle_accept(Socket) of
+            case HandlerModule:handle_accept(Socket, Args) of
                 {ok, HandlerState} ->
                     {noreply, State#state{socket = Socket,
                                           state = HandlerState}};
