@@ -45,19 +45,19 @@
 %% API functions
 %%------------------------------------------------------------------------------
 
-%% @doc Start gen_tcp_server with default options.
+%% @doc Start gen_tcp_server with default options and no arguments.
 -spec start_link(atom(), integer()) -> {ok, Pid :: pid()} | ignore |
                                        {error, Reason :: term()}.
 start_link(HandlerModule, Port) ->
     start_link(HandlerModule, Port, [], []).
 
-%% @doc Start gen_tcp_server with default options.
--spec start_link(atom(), integer(), term()) -> {ok, Pid :: pid()} | ignore |
+%% @doc Start gen_tcp_server with custom options and no arguments.
+-spec start_link(atom(), integer(), [term()]) -> {ok, Pid :: pid()} | ignore |
                                                {error, Reason :: term()}.
 start_link(HandlerModule, Port, Opts) ->
     start_link(HandlerModule, Port, Opts, []).
 
-%% @doc Start gen_tcp_server with custom options.
+%% @doc Start gen_tcp_server with custom options and arguments.
 -spec start_link(atom(), integer(), [term()], term()) -> {ok, Pid :: pid()} | ignore |
                                                          {error, Reason :: term()}.
 start_link(HandlerModule, Port, Opts, Args) ->
