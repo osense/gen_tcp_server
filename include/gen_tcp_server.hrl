@@ -20,6 +20,5 @@
 
 %% Default options for gen_tcp:listen/3.
 -define(GEN_TCP_SERVER_OPTS, [binary,
-                              {packet, raw},
                               {active, once},
                               {reuseaddr, true}]).
